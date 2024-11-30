@@ -5,7 +5,7 @@ import pandas as pd
 import altair as alt
 from typing import Dict, Any
 
-from roe_ai import generate_insights
+from roe_ai import generate_insights, extract_job_details
 
 
 def main():
@@ -80,7 +80,9 @@ def main():
     )
 
     # Page range input
-    page_range = st.sidebar.text_input("Page Range to Process", value="@PAGERANGE(1-3)", disabled=True)
+    page_range = st.sidebar.text_input(
+        "Page Range to Process", value="@PAGERANGE(1-3)", disabled=True
+    )
 
     # File uploader
     uploaded_file = st.file_uploader(
@@ -103,6 +105,9 @@ def main():
                     # Call the processing function
                     result = generate_insights(temp_file_path, instruction, page_range)
                     insights = json.loads(result[0]["value"])
+                    # Let's save insights in cache
+                    if "insights" not in st.session_state:
+                        st.session_state.insights = insights
 
             # Display results
             if "error" in result:
@@ -113,9 +118,13 @@ def main():
                 if all(field in insights for field in required_fields):
                     st.success("Resume processed successfully!")
                     display_candidate_profile(insights)
+
                 else:
                     st.warning("Received response does not match expected schema.")
                     st.json(insights)
+        else:
+            if st.session_state and st.session_state.insights:
+                display_candidate_profile(st.session_state.insights)
 
 
 def display_candidate_profile(candidate_data: Dict[str, Any]):
@@ -221,6 +230,47 @@ def display_candidate_profile(candidate_data: Dict[str, Any]):
     # Expandable section for full JSON
     with st.expander("📄 Full JSON Response"):
         st.json(candidate_data)
+
+    # Add a new section for job description extraction
+    st.sidebar.header("🌐 Job Description Extraction")
+    job_url = st.sidebar.text_input(
+        "Job Description URL",
+        placeholder="Enter URL of job description",
+        help="Paste the URL of a job description to extract details",
+    )
+    display_job_details(job_url)
+
+
+def display_job_details(job_url: str):
+    # Job Description Extraction Section
+    if job_url:
+        if st.button("Extract Job Details", type="primary"):
+            with st.spinner("Extracting job description..."):
+                try:
+                    # Call the job description extraction function
+                    result = extract_job_details(job_url)
+
+                    if result:
+                        # Display the extracted job details
+                        st.success("Job description extracted successfully!")
+
+                        # Parse the result
+                        job_details = json.loads(result[0]["value"])
+
+                        # Display key sections
+                        st.subheader("📋 Job Description Details")
+                        st.markdown(job_details["result"])
+
+                        # Expandable full JSON view
+                        with st.expander("📄 Full Job Description JSON"):
+                            st.json(job_details)
+                    else:
+                        st.error("Failed to extract job description.")
+
+                except Exception as e:
+                    st.error(f"An error occurred: {str(e)}")
+    else:
+        st.info("Please enter a job description URL in the sidebar.")
 
 
 # Run the Streamlit app
