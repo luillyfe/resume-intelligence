@@ -79,8 +79,6 @@ def process_url_with_ai_agent(
     try:
         # Headers with authorization
         headers = {"Authorization": f"Bearer {bearer_token}"}
-        print(headers)
-        print(data)
 
         # Send POST request
         response = requests.post(url, data=data, headers=headers)
@@ -96,6 +94,87 @@ def process_url_with_ai_agent(
         return None
     except ValueError as e:
         print(f"Error processing response: {e}")
+        return None
+
+
+@st.cache_data
+def process_text_with_ai_agent(
+    agent_id: str, bearer_token: str, data: Dict[str, str]
+) -> Optional[Dict[Any, Any]]:
+    """ """
+    # API endpoint
+    url = f"https://api.roe-ai.com/v1/agents/run/{agent_id}/"
+
+    try:
+        # Headers with authorization
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+
+        # Send POST request
+        print(data)
+        response = requests.post(url, data=data, headers=headers)
+
+        # Check the response
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+
+        # Return the response content
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request error: {e}")
+        return None
+    except ValueError as e:
+        print(f"Error processing response: {e}")
+        return None
+
+
+def evaluate_candidate_job_fit(
+    candidate_insights: str,
+    job_details: str,
+) -> Optional[Dict[Any, Any]]:
+    """
+    Evaluate how well a candidate matches a specific job's requirements.
+
+    :param candidate_insights: Extracted insights from the candidate's resume
+    :param job_details: Details of the job description
+    :return: Detailed matching assessment or None if processing fails
+    """
+    # Retrieve credentials from environment variables
+    AGENT_ID = os.environ.get("ROE_AI_EVALUATE_AGENT")
+    BEARER_TOKEN = os.environ.get("ROE_AI_BEARER_TOKEN")
+
+    # Validate credentials
+    if not AGENT_ID or not BEARER_TOKEN:
+        print(
+            "Error: ROE_AI_EVALUATE_AGENT or ROE_AI_BEARER_TOKEN not set in environment variables"
+        )
+        return
+
+    # Prepare data for the AI agent
+    data = {
+        "prompt": (
+            "Perform a comprehensive assessment of how well the candidate matches "
+            "the job requirements. Provide a detailed analysis including:"
+            "1. Percentage match of skills and experience"
+            "2. Strengths that align with the job"
+            "3. Potential skill gaps"
+            "4. Overall recommendation (Strong Fit/Moderate Fit/Weak Fit)"
+        ),
+        "target": (
+            f"Candidate Insights:\n{json.dumps(candidate_insights)}\n\n"
+            f"Job Details:\n{json.dumps(job_details)}"
+        ),
+    }
+
+    try:
+        # Process the matching assessment
+        result = process_text_with_ai_agent(AGENT_ID, BEARER_TOKEN, data)
+
+        if result is None:
+            raise ValueError("Failed to process candidate-job matching")
+
+        return result
+    except Exception as e:
+        print(f"Error assessing candidate-job match: {e}")
         return None
 
 
