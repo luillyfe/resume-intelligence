@@ -76,11 +76,11 @@ def main():
         "Please extract actionable insights from the candidates resume"
     )
     instruction = st.sidebar.text_area(
-        "AI Agent Instruction", value=default_instruction, height=150
+        "AI Agent Instruction", value=default_instruction, height=150, disabled=True
     )
 
     # Page range input
-    page_range = st.sidebar.text_input("Page Range to Process", value="@PAGERANGE(1-3)")
+    page_range = st.sidebar.text_input("Page Range to Process", value="@PAGERANGE(1-3)", disabled=True)
 
     # File uploader
     uploaded_file = st.file_uploader(
@@ -101,7 +101,7 @@ def main():
                     temp_file.write(uploaded_file.getvalue())
                     temp_file_path = temp_file.name
                     # Call the processing function
-                    result = generate_insights(temp_file_path)
+                    result = generate_insights(temp_file_path, instruction, page_range)
                     insights = json.loads(result[0]["value"])
 
             # Display results
