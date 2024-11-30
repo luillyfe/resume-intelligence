@@ -1,8 +1,11 @@
+import streamlit as st
 import requests
 import os
+import json
 from typing import Dict, Any, Optional
 
 
+@st.cache_data
 def process_document_with_ai_agent(
     agent_id: str,
     bearer_token: str,
@@ -57,6 +60,45 @@ def process_document_with_ai_agent(
         return None
 
 
+@st.cache_data
+def process_url_with_ai_agent(
+    agent_id: str, bearer_token: str, data: Dict[str, str]
+) -> Optional[Dict[Any, Any]]:
+    """
+    Process a URL with a Roe AI agent.
+
+    :param agent_id: The unique identifier for the Roe AI agent
+    :param bearer_token: Authentication token for the Roe AI API
+    :param url: The URL to be processed
+    :param data: A dictionary of parameters for the AI agent
+    :return: JSON response from the API or None if an error occurs
+    """
+    # API endpoint
+    url = f"https://api.roe-ai.com/v1/agents/run/{agent_id}/"
+
+    try:
+        # Headers with authorization
+        headers = {"Authorization": f"Bearer {bearer_token}"}
+        print(headers)
+        print(data)
+
+        # Send POST request
+        response = requests.post(url, data=data, headers=headers)
+
+        # Check the response
+        response.raise_for_status()  # Raises an HTTPError for bad responses
+
+        # Return the response content
+        return response.json()
+
+    except requests.exceptions.RequestException as e:
+        print(f"API request error: {e}")
+        return None
+    except ValueError as e:
+        print(f"Error processing response: {e}")
+        return None
+
+
 def generate_insights(pdf_path: str, instruction: str, page_range: str):
     """
     Main function to demonstrate processing a document with a Roe AI agent.
@@ -77,6 +119,49 @@ def generate_insights(pdf_path: str, instruction: str, page_range: str):
     return process_document_with_ai_agent(
         AGENT_ID, BEARER_TOKEN, pdf_path, instruction, page_range
     )
+
+
+def extract_job_details(
+    url: str = "https://www.ycombinator.com/companies/roe-ai/jobs/NZDmSo9-founding-engineer",
+    form_selector: str = "#job-description-form",
+    form_fields: Dict[str, str] = None,
+):
+    """
+    Extract job description from a given URL, optionally submitting form fields.
+
+    :param url: URL to process
+    :param form_selector: CSS selector for the form to interact with
+    :param form_fields: Dictionary of form field names and their values
+    :return: Processed job description or None
+    """
+    # Retrieve credentials from environment variables
+    AGENT_ID = os.environ.get("ROE_AI_JOB_AGENT")
+    BEARER_TOKEN = os.environ.get("ROE_AI_BEARER_TOKEN")
+
+    # Validate credentials
+    if not AGENT_ID or not BEARER_TOKEN:
+        print("Error: Credentials not set")
+        return None
+
+    # Prepare data for the AI agent
+    data = {
+        "url": url,
+        "instruction": "Extract key responsibilities and requirements from this job description",
+        "form_selector": form_selector,
+        "form_fields": json.dumps(form_fields) if form_fields else "",
+    }
+
+    try:
+        # Process the URL
+        result = process_url_with_ai_agent(AGENT_ID, BEARER_TOKEN, data)
+
+        if result is None:
+            raise ValueError("Failed to process URL")
+
+        return result
+    except Exception as e:
+        print(f"Error extracting job description: {e}")
+        return None
 
 
 # Ensure script only runs when directly executed
