@@ -3,9 +3,9 @@ import json
 import tempfile
 import pandas as pd
 import altair as alt
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 
-from roe_ai import generate_insights, extract_job_details
+from roe_ai import generate_insights, extract_job_details, evaluate_candidate_job_fit
 
 
 def main():
@@ -122,9 +122,26 @@ def main():
                 else:
                     st.warning("Received response does not match expected schema.")
                     st.json(insights)
-        else:
-            if st.session_state and st.session_state.insights:
-                display_candidate_profile(st.session_state.insights)
+
+        if hasattr(st.session_state, "insights"):
+            display_candidate_profile(st.session_state.insights)
+            # Add a new section for job description extraction
+            st.sidebar.header("🌐 Job Description Extraction")
+            job_url = st.sidebar.text_input(
+                "Job Description URL",
+                placeholder="Enter URL of job description",
+                help="Paste the URL of a job description to extract details",
+            )
+
+            display_job_details(job_url)
+
+        # If job details are already in session state, prepare for job match
+        if hasattr(st.session_state, "job_details") and hasattr(
+            st.session_state, "insights"
+        ):
+            display_job_match_assessment(
+                st.session_state.job_details, st.session_state.insights
+            )
 
 
 def display_candidate_profile(candidate_data: Dict[str, Any]):
@@ -231,46 +248,177 @@ def display_candidate_profile(candidate_data: Dict[str, Any]):
     with st.expander("📄 Full JSON Response"):
         st.json(candidate_data)
 
-    # Add a new section for job description extraction
-    st.sidebar.header("🌐 Job Description Extraction")
-    job_url = st.sidebar.text_input(
-        "Job Description URL",
-        placeholder="Enter URL of job description",
-        help="Paste the URL of a job description to extract details",
-    )
-    display_job_details(job_url)
 
-
-def display_job_details(job_url: str):
+def display_job_details(job_url: str) -> Optional[Dict[str, Any]]:
     # Job Description Extraction Section
+    job_details = None
     if job_url:
         if st.button("Extract Job Details", type="primary"):
             with st.spinner("Extracting job description..."):
                 try:
                     # Call the job description extraction function
-                    result = extract_job_details(job_url)
-
-                    if result:
-                        # Display the extracted job details
-                        st.success("Job description extracted successfully!")
-
+                    if "job_details" not in st.session_state:
+                        result = extract_job_details(job_url)
                         # Parse the result
                         job_details = json.loads(result[0]["value"])
-
-                        # Display key sections
-                        st.subheader("📋 Job Description Details")
-                        st.markdown(job_details["result"])
-
-                        # Expandable full JSON view
-                        with st.expander("📄 Full Job Description JSON"):
-                            st.json(job_details)
-                    else:
-                        st.error("Failed to extract job description.")
+                        # Store job details in session state
+                        st.session_state.job_details = job_details
 
                 except Exception as e:
                     st.error(f"An error occurred: {str(e)}")
+                    return None
+        if hasattr(st.session_state, "job_details"):
+            # Display the extracted job details
+            st.success("Job description extracted successfully!")
+
+            # Display key sections
+            st.subheader("📋 Job Description Details")
+            st.markdown(st.session_state.job_details["result"])
+
+            # Expandable full JSON view
+            with st.expander("📄 Full Job Description JSON"):
+                st.json(st.session_state.job_details)
+
+            return st.session_state.job_details
     else:
         st.info("Please enter a job description URL in the sidebar.")
+
+    return None
+
+
+def display_job_match_assessment(
+    job_details: Dict[str, Any], candidate_insights: Dict[str, Any]
+):
+    """
+    Display the assessment of how well a candidate matches a job description with enhanced visualization.
+
+    :param job_details: Dictionary containing job description details
+    :param candidate_insights: Dictionary containing candidate insights
+    """
+    st.sidebar.header("🔍 Job Match Assessment")
+
+    # Check if both job details and candidate insights are available
+    if job_details and candidate_insights:
+        if st.sidebar.button("Assess Job Fit", type="primary"):
+            with st.spinner("Analyzing candidate-job match..."):
+                try:
+                    # Call the job matching assessment function
+                    result = evaluate_candidate_job_fit(
+                        json.dumps(candidate_insights), json.dumps(job_details)
+                    )
+
+                    if result:
+                        # Parse the result
+                        match_assessment = json.loads(result[0]["value"])
+
+                        # Create a visually appealing job fit assessment
+                        st.header("📊 Candidate-Job Fit Analysis")
+
+                        # Overall Match Percentage
+                        col1, col2, col3 = st.columns(3)
+                        with col1:
+                            st.metric(
+                                label="Overall Match",
+                                value=f"{match_assessment.get('percentage_match', 0)}%",
+                                help="Percentage of job requirements met by the candidate",
+                            )
+
+                        with col2:
+                            # Recommendation color coding
+                            recommendation = match_assessment.get(
+                                "overall_recommendation", "Unknown"
+                            )
+                            if recommendation == "Strong Fit":
+                                color = "green"
+                                emoji = "✅"
+                            elif recommendation == "Moderate Fit":
+                                color = "orange"
+                                emoji = "⚠️"
+                            else:
+                                color = "red"
+                                emoji = "❌"
+
+                            st.markdown(
+                                f"""
+                            <div style="background-color:{color}20; 
+                                        border-radius:10px; 
+                                        padding:10px; 
+                                        text-align:center;">
+                            <h4 style="color:{color};">
+                            {emoji} {recommendation}
+                            </h4>
+                            </div>
+                            """,
+                                unsafe_allow_html=True,
+                            )
+
+                        with col3:
+                            # Potential interview readiness
+                            st.metric(
+                                label="Interview Potential",
+                                value=(
+                                    "Good"
+                                    if match_assessment.get("percentage_match", 0) > 70
+                                    else "Needs Work"
+                                ),
+                                help="Candidate's potential for interview based on job match",
+                            )
+
+                        # Strengths Section
+                        st.subheader("🌟 Candidate Strengths")
+                        strengths = match_assessment.get("strengths", [])
+                        if strengths:
+                            strength_cols = st.columns(3)
+                            for i, strength in enumerate(strengths):
+                                with strength_cols[i % 3]:
+                                    st.markdown(
+                                        f"""
+                                    <div style="background-color:#e6f3e6; 
+                                                border-left: 4px solid green; 
+                                                padding: 10px; 
+                                                margin-bottom: 10px; 
+                                                border-radius: 5px;">
+                                    {strength}
+                                    </div>
+                                    """,
+                                        unsafe_allow_html=True,
+                                    )
+                        else:
+                            st.info("No specific strengths identified")
+
+                        # Potential Skill Gaps Section
+                        st.subheader("🚧 Potential Skill Gaps")
+                        skill_gaps = match_assessment.get("potential_skill_gaps", [])
+                        if skill_gaps:
+                            gap_cols = st.columns(3)
+                            for i, gap in enumerate(skill_gaps):
+                                with gap_cols[i % 3]:
+                                    st.markdown(
+                                        f"""
+                                    <div style="background-color:#fee6e6; 
+                                                border-left: 4px solid red; 
+                                                padding: 10px; 
+                                                margin-bottom: 10px; 
+                                                border-radius: 5px;">
+                                    {gap}
+                                    </div>
+                                    """,
+                                        unsafe_allow_html=True,
+                                    )
+                        else:
+                            st.info("No significant skill gaps identified")
+
+                        # Expandable full assessment view
+                        with st.expander("📄 Detailed Match Assessment"):
+                            st.json(match_assessment)
+
+                    else:
+                        st.error("Failed to assess job fit.")
+
+                except Exception as e:
+                    st.error(f"An error occurred during job fit assessment: {str(e)}")
+    else:
+        st.sidebar.info("Upload resume and job description to assess job fit.")
 
 
 # Run the Streamlit app
