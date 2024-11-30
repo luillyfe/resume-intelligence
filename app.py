@@ -98,11 +98,12 @@ class ResumeIntelligenceApp:
         default_instruction = (
             "Please extract actionable insights from the candidates resume"
         )
-        st.sidebar.text_area(
+
+        st.session_state.insights_prompt = st.sidebar.text_area(
             "AI Agent Instruction", value=default_instruction, height=150, disabled=True
         )
 
-        st.sidebar.text_input(
+        st.session_state.page_filter = st.sidebar.text_input(
             "Page Range to Process", value="@PAGERANGE(1-3)", disabled=True
         )
 
@@ -151,8 +152,8 @@ class ResumeIntelligenceApp:
 
                 result = generate_insights(
                     temp_file_path,
-                    "Please extract actionable insights from the candidates resume",
-                    "@PAGERANGE(1-3)",
+                    st.session_state.insights_prompt,
+                    st.session_state.page_filter,
                 )
 
                 insights = json.loads(result[0]["value"])
