@@ -57,7 +57,7 @@ def process_document_with_ai_agent(
         return None
 
 
-def generate_insights(pdf_path: str = "./resume.pdf"):
+def generate_insights(pdf_path: str, instruction: str, page_range: str):
     """
     Main function to demonstrate processing a document with a Roe AI agent.
     Reads credentials from environment variables.
@@ -74,12 +74,14 @@ def generate_insights(pdf_path: str = "./resume.pdf"):
         return
 
     # Process document
-    return process_document_with_ai_agent(AGENT_ID, BEARER_TOKEN, pdf_path)
+    return process_document_with_ai_agent(
+        AGENT_ID, BEARER_TOKEN, pdf_path, instruction, page_range
+    )
 
 
 # Ensure script only runs when directly executed
 if __name__ == "__main__":
-    result = generate_insights()
+    result = generate_insights("./resume.pdf")
 
     if result:
         print("AI agent processed the document successfully:")
