@@ -1,5 +1,4 @@
 /.env.sh
 /__pycache__
 /roe
-job-description.sh
-default_agent.sh
+/files
