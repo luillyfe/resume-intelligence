@@ -138,7 +138,6 @@ def process_text_with_ai_agent(
         headers = {"Authorization": f"Bearer {bearer_token}"}
 
         # Send POST request
-        print(data)
         response = requests.post(url, data=data, headers=headers)
 
         # Check the response
