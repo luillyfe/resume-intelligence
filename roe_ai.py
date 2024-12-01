@@ -101,7 +101,35 @@ def process_url_with_ai_agent(
 def process_text_with_ai_agent(
     agent_id: str, bearer_token: str, data: Dict[str, str]
 ) -> Optional[Dict[Any, Any]]:
-    """ """
+    """
+    Process text data using the job description parser Roe AI agent via API.
+
+    This function sends a POST request to the Roe AI agent API with the provided 
+    text data and authentication credentials. It is designed to process and 
+    analyze text through a specified AI agent.
+
+    :param agent_id: The unique identifier for the Roe AI agent to be used
+    :param bearer_token: Authentication token for accessing the Roe AI API
+    :param data: A dictionary containing the text data and any additional 
+                 parameters required by the AI agent. Typically includes 
+                 'prompt' and 'target' keys.
+
+    :return: A dictionary containing the JSON response from the AI agent 
+             if the request is successful, or None if an error occurs.
+
+    :raises requests.exceptions.RequestException: If there's an error 
+            connecting to or communicating with the Roe AI API
+    :raises ValueError: If there's an error processing the API response
+
+    Example:
+        data = {
+            'prompt': 'Analyze the following text',
+            'target': 'Some text to be processed'
+        }
+        result = process_text_with_ai_agent(
+            'agent123', 'bearer_token_value', data
+        )
+    """
     # API endpoint
     url = f"https://api.roe-ai.com/v1/agents/run/{agent_id}/"
 
