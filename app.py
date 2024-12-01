@@ -127,13 +127,16 @@ class ResumeIntelligenceApp:
         Args:
             uploaded_file: Uploaded PDF file
         """
-        if st.button("Extract Resume Insights", type="primary"):
+        if st.sidebar.button("Extract Resume Insights", type="primary"):
             insights = self._extract_resume_insights(uploaded_file)
             st.session_state.insights = insights
 
         if hasattr(st.session_state, "insights"):
             self._display_candidate_profile(st.session_state.insights)
             self._setup_job_description_section(st.session_state.insights)
+
+        if hasattr(st.session_state, "job_details"):
+            st.sidebar.info("Please scroll down to see results")
 
     def _extract_resume_insights(self, uploaded_file):
         """
@@ -161,7 +164,7 @@ class ResumeIntelligenceApp:
                 # Validate insights against expected schema
                 required_fields = ["name", "email", "skills"]
                 if all(field in insights for field in required_fields):
-                    st.success("Resume processed successfully!")
+                    # st.success("Resume processed successfully!")
                     return insights
 
                 st.warning("Received response does not match expected schema.")
@@ -197,13 +200,13 @@ class ResumeIntelligenceApp:
             Job details dictionary or None
         """
         if job_url:
-            if st.button("Extract Job Details", type="primary"):
+            if st.sidebar.button("Extract Job Details", type="primary"):
                 with st.spinner("Extracting job description..."):
                     try:
                         result = extract_job_details(job_url)
                         job_details = json.loads(result[0]["value"])
                         st.session_state.job_details = job_details
-                        st.success("Job description extracted successfully!")
+                        # st.success("Job description extracted successfully!")
                     except Exception as e:
                         st.error(f"An error occurred: {str(e)}")
 
