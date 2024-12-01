@@ -2,3 +2,5 @@
 /__pycache__
 /roe
 /files
+/.pytest_cache
+/tests/__pycache__
