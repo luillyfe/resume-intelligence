@@ -143,7 +143,11 @@ def _process_resume(uploaded_file):
     Args:
         uploaded_file: Uploaded PDF file
     """
-    if st.sidebar.button("Extract Resume Insights", type="primary"):
+    if st.sidebar.button(
+        "Extract Resume Insights",
+        type="primary",
+        disabled=hasattr(st.session_state, "insights"),
+    ):
         insights = _extract_resume_insights(uploaded_file)
         st.session_state.insights = insights
 
@@ -223,7 +227,11 @@ def _extract_job_details(job_url):
         Job details dictionary or None
     """
     if job_url:
-        if st.sidebar.button("Extract Job Details", type="primary"):
+        if st.sidebar.button(
+            "Extract Job Details",
+            type="primary",
+            disabled=hasattr(st.session_state, "job_details"),
+        ):
             st.session_state.show_scroll_message = True
             with st.spinner("Extracting job description..."):
                 try:
