@@ -104,20 +104,20 @@ def process_text_with_ai_agent(
     """
     Process text data using the job description parser Roe AI agent via API.
 
-    This function sends a POST request to the Roe AI agent API with the provided 
-    text data and authentication credentials. It is designed to process and 
+    This function sends a POST request to the Roe AI agent API with the provided
+    text data and authentication credentials. It is designed to process and
     analyze text through a specified AI agent.
 
     :param agent_id: The unique identifier for the Roe AI agent to be used
     :param bearer_token: Authentication token for accessing the Roe AI API
-    :param data: A dictionary containing the text data and any additional 
-                 parameters required by the AI agent. Typically includes 
+    :param data: A dictionary containing the text data and any additional
+                 parameters required by the AI agent. Typically includes
                  'prompt' and 'target' keys.
 
-    :return: A dictionary containing the JSON response from the AI agent 
+    :return: A dictionary containing the JSON response from the AI agent
              if the request is successful, or None if an error occurs.
 
-    :raises requests.exceptions.RequestException: If there's an error 
+    :raises requests.exceptions.RequestException: If there's an error
             connecting to or communicating with the Roe AI API
     :raises ValueError: If there's an error processing the API response
 
@@ -185,6 +185,7 @@ def evaluate_candidate_job_fit(
             "2. Strengths that align with the job"
             "3. Potential skill gaps"
             "4. Overall recommendation (Strong Fit/Moderate Fit/Weak Fit)"
+            'output example: {"percentage_match": 75, "overall_recommendation": "Strong Fit", "strengths": ["Strong Python skills", "ML background"], "potential_skill_gaps": ["Advanced cloud computing"]}'
         ),
         "target": (
             f"Candidate Insights:\n{json.dumps(candidate_insights)}\n\n"
