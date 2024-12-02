@@ -1,12 +1,11 @@
 import unittest
 from unittest.mock import patch, mock_open, MagicMock
 import requests
-import json
 
-# Importing from parent directory
 import sys
 import os
 
+# Importing from parent directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../")))
 # Import the roe_ai
 import roe_ai
