@@ -62,6 +62,20 @@ def _apply_custom_css():
         padding: 2px 6px;
         font-size: 0.8em;
     }
+    .skill-gap {
+        background-color:#fee6e6; 
+        border-left: 4px solid red; 
+        padding: 10px; 
+        margin-bottom: 10px; 
+        border-radius: 5px;
+    }
+    .strengths {
+        background-color:#e6f3e6; 
+        border-left: 4px solid green; 
+        padding: 10px; 
+        margin-bottom: 10px; 
+        border-radius: 5px;
+    }
     </style>
     """,
         unsafe_allow_html=True,
@@ -370,11 +384,7 @@ def _render_strengths(match_assessment):
             with strength_cols[i % 3]:
                 st.markdown(
                     f"""
-                    <div style="background-color:#e6f3e6; 
-                                border-left: 4px solid green; 
-                                padding: 10px; 
-                                margin-bottom: 10px; 
-                                border-radius: 5px;">
+                    <div class="strengths">
                     {strength}
                     </div>
                     """,
@@ -400,11 +410,7 @@ def _render_skill_gaps(match_assessment):
             with gap_cols[i % 3]:
                 st.markdown(
                     f"""
-                    <div style="background-color:#fee6e6; 
-                                border-left: 4px solid red; 
-                                padding: 10px; 
-                                margin-bottom: 10px; 
-                                border-radius: 5px;">
+                    <div class="skill-gap">
                     {gap}
                     </div>
                     """,
