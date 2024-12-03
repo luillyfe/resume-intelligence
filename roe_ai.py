@@ -278,3 +278,8 @@ if __name__ == "__main__":
     if result:
         print("AI agent processed the document successfully:")
         print(result)
+
+
+# https://docs.streamlit.io/develop/concepts/architecture/caching
+# https://docs.roe-ai.com/api-reference/agents/run
+# https://docs.roe-ai.com/agents/introduction
