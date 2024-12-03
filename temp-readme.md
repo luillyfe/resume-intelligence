@@ -12,3 +12,4 @@ short_description: Resume Intelligence Platform with Roe AI
 ---
 
 Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+asasx
