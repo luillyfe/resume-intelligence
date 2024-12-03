@@ -6,7 +6,7 @@
 
 Say goodbye to tedious resume screening and hello to efficient hiring with the Resume Intelligence Platform. Leveraging the prowess of multiple [Roe AI agents](https://docs.roe-ai.com/agents/introduction), this Streamlit application streamlines the process of extracting candidate insights, parsing job descriptions, and assessing job fits like never before. 🤖📈
 
-## Why Choose Us? 💼
+## What special about this Resume Intelligence Platform? 💼
 
 - **Multi-Agent Magic:** Our platform employs a suite of specialized Roe AI agents, each expert in their domain. From decoding resumes to evaluating job fits, each agent contributes uniquely to provide comprehensive insights. 🧙‍♂️💡
 
