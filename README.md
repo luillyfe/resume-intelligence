@@ -112,8 +112,6 @@ For inquiries, suggestions, or just to say hello, reach out to me at [luillyfe89
 
 ---
 
-Made with ❤️ by [Fermin Blanco](https://luillyfe.medium.com/)
-
 Hugginface Space Configuration
 
 ---
@@ -129,4 +127,4 @@ license: mit
 short_description: Resume Intelligence Platform with Roe AI
 ---
 
-Check out the configuration reference at https://huggingface.co/docs/hub/spaces-config-reference
+Made with ❤️ by [Fermin Blanco](https://luillyfe.medium.com/)
